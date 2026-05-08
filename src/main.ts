@@ -1,16 +1,17 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  process.env.tz = '-03:00';
+  app.enableCors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  });
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.setGlobalPrefix('api');
 
-  app.enableCors();
-
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(3000);
+  console.log('Backend rodando em http://localhost:3000/api');
 }
 bootstrap();

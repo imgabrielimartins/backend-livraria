@@ -19,6 +19,7 @@ export enum BookGenre {
 
 export enum BookStatus {
   PENDENTE = 'pendente',
+  EM_ANALISE = 'em_analise',
   APROVADO = 'aprovado',
   REJEITADO = 'rejeitado',
 }
