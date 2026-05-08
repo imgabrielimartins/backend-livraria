@@ -66,15 +66,10 @@ CREATE DATABASE ver_e_ler_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ## ▶️ Rodando o projeto
 
 ```bash
-# Desenvolvimento
-npm run start:dev
-
-# Produção
-npm run build
-npm run start:prod
+npx ts-node -r tsconfig-paths/register src/main.ts
 ```
 
-O servidor sobe em `http://localhost:3000/api`
+O servidor sobe em `http://localhost:3333/api`
 
 Na primeira execução, o usuário **admin** é criado automaticamente com as credenciais do `.env`.
 
@@ -142,8 +137,8 @@ Livro aparece no Marketplace
 ```json
 POST /api/auth/register
 {
-  "name": "Gabriel Martins",
-  "email": "gabriel@email.com",
+  "name": "Gabrieli Martins",
+  "email": "gabrieli@email.com",
   "password": "123456",
   "role": "autor"
 }
@@ -153,7 +148,7 @@ POST /api/auth/register
 ```json
 POST /api/auth/login
 {
-  "email": "gabriel@email.com",
+  "email": "gabrieli@email.com",
   "password": "123456"
 }
 ```
@@ -178,6 +173,17 @@ Authorization: Bearer <token>
   "adminNote": "O livro precisa de revisão ortográfica."
 }
 ```
+
+---
+
+## 📊 Status do livro
+
+| Status | Descrição |
+|---|---|
+| `pendente` | Aguardando análise do admin |
+| `em_analise` | Admin está revisando |
+| `aprovado` | Aprovado — autor pode publicar |
+| `rejeitado` | Rejeitado — autor vê o motivo |
 
 ---
 
