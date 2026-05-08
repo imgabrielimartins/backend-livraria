@@ -1,99 +1,220 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 📚 Livraria Ver e Ler — Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend da plataforma **Livraria Ver e Ler**, uma aplicação para autores independentes publicarem seus livros após curadoria do administrador.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## 🚀 Tecnologias
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- [NestJS](https://nestjs.com/) — Framework Node.js
+- [TypeORM](https://typeorm.io/) — ORM para banco de dados
+- [MySQL](https://www.mysql.com/) — Banco de dados
+- [JWT](https://jwt.io/) — Autenticação
+- [Passport](http://www.passportjs.org/) — Middleware de autenticação
+- [bcryptjs](https://www.npmjs.com/package/bcryptjs) — Hash de senhas
 
-## Project setup
+---
+
+## 📋 Pré-requisitos
+
+- Node.js v18+
+- MySQL 8+
+- npm
+
+---
+
+## ⚙️ Instalação
 
 ```bash
-$ npm install
+# Clone o repositório
+git clone https://github.com/imgabrielimartins/backend-livraria.git
+cd backend-livraria
+
+# Instale as dependências
+npm install
 ```
 
-## Compile and run the project
+---
+
+## 🔧 Configuração
+
+Crie um arquivo `.env` na raiz do projeto:
+
+```env
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASS=sua_senha
+DB_NAME=ver_e_ler_db
+
+JWT_SECRET=seu_segredo_jwt
+JWT_EXPIRES=7d
+
+ADMIN_EMAIL=admin@vereler.com
+ADMIN_PASSWORD=sua_senha_admin
+ADMIN_NAME=Administrador
+```
+
+Crie o banco de dados no MySQL:
+
+```sql
+CREATE DATABASE ver_e_ler_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+---
+
+## ▶️ Rodando o projeto
 
 ```bash
-# development
-$ npm run start
+# Desenvolvimento
+npm run start:dev
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+# Produção
+npm run build
+npm run start:prod
 ```
 
-## Run tests
+O servidor sobe em `http://localhost:3000/api`
 
-```bash
-# unit tests
-$ npm run test
+Na primeira execução, o usuário **admin** é criado automaticamente com as credenciais do `.env`.
 
-# e2e tests
-$ npm run test:e2e
+---
 
-# test coverage
-$ npm run test:cov
+## 👤 Perfis de usuário
+
+| Role | Descrição |
+|---|---|
+| `leitor` | Pode explorar o marketplace |
+| `autor` | Pode submeter livros para publicação |
+| `admin` | Gerencia livros e aprova publicações |
+
+> O perfil `admin` é criado automaticamente e não pode ser cadastrado via API.
+
+---
+
+## 📖 Fluxo de publicação
+
+```
+Autor submete o livro
+        ↓
+status: PENDENTE
+        ↓
+Admin coloca EM_ANALISE
+        ↓
+Admin APROVA ou REJEITA (com motivo)
+        ↓
+Se aprovado → Autor clica em "Publicar"
+        ↓
+Livro aparece no Marketplace
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 🛣️ Rotas da API
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Auth
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+| Método | Rota | Auth | Descrição |
+|---|---|---|---|
+| POST | `/api/auth/register` | ❌ | Cadastro de usuário |
+| POST | `/api/auth/login` | ❌ | Login |
+| GET | `/api/auth/me` | ✅ | Dados do usuário logado |
+
+### Books
+
+| Método | Rota | Auth | Descrição |
+|---|---|---|---|
+| POST | `/api/books` | ✅ Autor | Submeter livro |
+| GET | `/api/books/mine` | ✅ Autor | Meus livros com status |
+| PATCH | `/api/books/:id/publish` | ✅ Autor | Publicar livro aprovado |
+| GET | `/api/books/published` | ❌ | Marketplace público |
+| GET | `/api/books/authors` | ❌ | Lista autores do marketplace |
+| GET | `/api/books/pending` | ✅ Admin | Livros pendentes |
+| PATCH | `/api/books/:id/analysis` | ✅ Admin | Colocar em análise |
+| PATCH | `/api/books/:id/approve` | ✅ Admin | Aprovar livro |
+| PATCH | `/api/books/:id/reject` | ✅ Admin | Rejeitar com motivo |
+
+---
+
+## 📦 Exemplos de requisição
+
+### Cadastro
+```json
+POST /api/auth/register
+{
+  "name": "Gabriel Martins",
+  "email": "gabriel@email.com",
+  "password": "123456",
+  "role": "autor"
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Login
+```json
+POST /api/auth/login
+{
+  "email": "gabriel@email.com",
+  "password": "123456"
+}
+```
 
-## Resources
+### Submeter livro
+```json
+POST /api/books
+Authorization: Bearer <token>
+{
+  "title": "Meu Primeiro Livro",
+  "synopsis": "Uma história incrível...",
+  "authorMessage": "Escrevi este livro com muito carinho.",
+  "genre": "romance"
+}
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### Rejeitar livro (admin)
+```json
+PATCH /api/books/1/reject
+Authorization: Bearer <token>
+{
+  "adminNote": "O livro precisa de revisão ortográfica."
+}
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+---
 
-## Support
+## 🗂️ Estrutura do projeto
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```
+src/
+├── auth/
+│   ├── auth.controller.ts
+│   ├── auth.module.ts
+│   ├── auth.service.ts
+│   ├── jwt-auth.guard.ts
+│   ├── jwt.strategy.ts
+│   ├── roles.decorator.ts
+│   └── roles.guard.ts
+├── books/
+│   ├── book.entity.ts
+│   ├── books.controller.ts
+│   ├── books.module.ts
+│   └── books.service.ts
+├── users/
+│   ├── seed-admin.service.ts
+│   ├── user.entity.ts
+│   ├── users.module.ts
+│   └── users.service.ts
+├── app.module.ts
+└── main.ts
+```
 
-## Stay in touch
+---
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## 🔗 Frontend
 
-## License
+O frontend deste projeto está disponível em: [Livraria Ver e Ler](https://github.com/Renato666Jk/Livraria-Ver-e-Ler)
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-# backend-livraria
+---
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT.
