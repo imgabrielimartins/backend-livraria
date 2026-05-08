@@ -5,11 +5,16 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Book, BookStage, BookGenre, BookStatus } from './book.entity';
+import { Book, BookGenre, BookStatus } from './book.entity';
 
 @Injectable()
 export class BooksService {
   constructor(@InjectRepository(Book) private booksRepo: Repository<Book>) {}
+
+  private sanitizeBook(book: Book): object {
+    const { password, ...author } = book.author as any;
+    return { ...book, author };
+  }
 
   async submit(data: {
     title: string;
@@ -23,20 +28,11 @@ export class BooksService {
       synopsis: data.synopsis,
       authorMessage: data.authorMessage,
       genre: data.genre,
-      author: { id: data.authorId },
-      stage: BookStage.RASCUNHO,
+      author: { id: data.authorId } as any,
       status: BookStatus.PENDENTE,
+      isPublished: false,
     });
-    const saved = await this.booksRepo.save(book);
-    return this.withProgress(saved);
-  }
-
-  async setInAnalysis(bookId: number): Promise<object> {
-    const book = await this.booksRepo.findOne({ where: { id: bookId } });
-    if (!book) throw new NotFoundException('Livro não encontrado');
-
-    book.status = BookStatus.EM_ANALISE;
-    return await this.booksRepo.save(book);
+    return this.sanitizeBook(await this.booksRepo.save(book));
   }
 
   async findByAuthor(authorId: number): Promise<object[]> {
@@ -44,19 +40,29 @@ export class BooksService {
       where: { author: { id: authorId } },
       order: { createdAt: 'DESC' },
     });
-    return books.map((b) => this.withProgress(b));
+    return books.map((b) => this.sanitizeBook(b));
+  }
+
+  async publishBook(bookId: number, authorId: number): Promise<object> {
+    const book = await this.booksRepo.findOne({ where: { id: bookId } });
+    if (!book) throw new NotFoundException('Livro não encontrado');
+    if (book.author.id !== authorId)
+      throw new ForbiddenException('Acesso negado');
+    if (book.status !== BookStatus.APROVADO) {
+      throw new ForbiddenException(
+        'O livro precisa ser aprovado antes de ser publicado',
+      );
+    }
+    book.isPublished = true;
+    return this.sanitizeBook(await this.booksRepo.save(book));
   }
 
   async findPublished(genre?: BookGenre, authorId?: number): Promise<object[]> {
-    const where: any = { status: BookStatus.APROVADO, isPublished: true };
+    const where: any = { isPublished: true, status: BookStatus.APROVADO };
     if (genre) where.genre = genre;
     if (authorId) where.author = { id: authorId };
-
-    const books = await this.booksRepo.find({
-      where,
-      order: { updatedAt: 'DESC' },
-    });
-    return books.map((b) => this.withProgress(b));
+    const books = await this.booksRepo.find({ where, order: { updatedAt: 'DESC' } });
+    return books.map((b) => this.sanitizeBook(b));
   }
 
   async findPending(): Promise<object[]> {
@@ -64,37 +70,30 @@ export class BooksService {
       where: { status: BookStatus.PENDENTE },
       order: { createdAt: 'ASC' },
     });
-    return books.map((b) => this.withProgress(b));
+    return books.map((b) => this.sanitizeBook(b));
   }
 
-  async updateStage(bookId: number, stage: BookStage): Promise<object> {
+  async setInAnalysis(bookId: number): Promise<object> {
     const book = await this.booksRepo.findOne({ where: { id: bookId } });
     if (!book) throw new NotFoundException('Livro não encontrado');
-
-    book.stage = stage;
-    const saved = await this.booksRepo.save(book);
-    return this.withProgress(saved);
+    book.status = BookStatus.EM_ANALISE;
+    return this.sanitizeBook(await this.booksRepo.save(book));
   }
 
   async approveBook(bookId: number): Promise<object> {
     const book = await this.booksRepo.findOne({ where: { id: bookId } });
     if (!book) throw new NotFoundException('Livro não encontrado');
-
     book.status = BookStatus.APROVADO;
-    book.isPublished = true;
-    const saved = await this.booksRepo.save(book);
-    return this.withProgress(saved);
+    return this.sanitizeBook(await this.booksRepo.save(book));
   }
 
   async rejectBook(bookId: number, adminNote: string): Promise<object> {
     const book = await this.booksRepo.findOne({ where: { id: bookId } });
     if (!book) throw new NotFoundException('Livro não encontrado');
-
     book.status = BookStatus.REJEITADO;
     book.isPublished = false;
     book.adminNote = adminNote;
-    const saved = await this.booksRepo.save(book);
-    return this.withProgress(saved);
+    return this.sanitizeBook(await this.booksRepo.save(book));
   }
 
   async listAuthors(): Promise<object[]> {
@@ -105,9 +104,5 @@ export class BooksService {
       .select(['author.id', 'author.name'])
       .distinct(true)
       .getRawMany();
-  }
-
-  private withProgress(book: Book): object {
-    return { ...book, progress: stageProgress[book.stage] };
   }
 }

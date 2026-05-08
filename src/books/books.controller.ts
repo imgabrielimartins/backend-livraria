@@ -13,7 +13,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { BooksService } from './books.service';
-import { BookStage, BookGenre } from './book.entity';
+import { BookGenre } from './book.entity';
 
 interface AuthRequest {
   user: { sub: number; email: string; role: string };
@@ -29,13 +29,6 @@ export class BooksController {
     @Query('authorId') authorId?: number,
   ) {
     return this.booksService.findPublished(genre, authorId);
-  }
-
-  @Patch(':id/analysis')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
-  setInAnalysis(@Param('id') id: number) {
-    return this.booksService.setInAnalysis(id);
   }
 
   @Get('authors')
@@ -71,11 +64,17 @@ export class BooksController {
     return this.booksService.submit({ ...body, authorId: req.user.sub });
   }
 
-  @Patch(':id/stage')
+  @Patch(':id/publish')
+  @UseGuards(JwtAuthGuard)
+  publish(@Param('id') id: number, @Request() req: AuthRequest) {
+    return this.booksService.publishBook(id, req.user.sub);
+  }
+
+  @Patch(':id/analysis')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
-  updateStage(@Param('id') id: number, @Body() body: { stage: BookStage }) {
-    return this.booksService.updateStage(id, body.stage);
+  setInAnalysis(@Param('id') id: number) {
+    return this.booksService.setInAnalysis(id);
   }
 
   @Patch(':id/approve')
