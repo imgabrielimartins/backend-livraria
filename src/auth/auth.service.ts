@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -12,13 +16,29 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(name: string, email: string, password: string, role: UserRole): Promise<object> {
+  async register(
+    name: string,
+    email: string,
+    password: string,
+    role: UserRole,
+  ): Promise<object> {
     const exists = await this.usersRepo.findOneBy({ email });
     if (exists) throw new ConflictException('E-mail já cadastrado');
 
-    const safeRole = role === UserRole.ADMIN ? UserRole.LEITOR : role;
+    const roleMap: Record<string, UserRole> = {
+      reader: UserRole.LEITOR,
+      leitor: UserRole.LEITOR,
+      author: UserRole.AUTOR,
+      autor: UserRole.AUTOR,
+    };
+    const safeRole = roleMap[String(role)] ?? UserRole.LEITOR;
     const hashed = await bcrypt.hash(password, 10);
-    const user = this.usersRepo.create({ name, email, password: hashed, role: safeRole });
+    const user = this.usersRepo.create({
+      name,
+      email,
+      password: hashed,
+      role: safeRole,
+    });
     await this.usersRepo.save(user);
     return this.signToken(user);
   }
@@ -42,7 +62,12 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email, role: user.role };
     return {
       access_token: this.jwtService.sign(payload),
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     };
   }
 }

@@ -6,8 +6,10 @@ import { UsersModule } from './users/users.module';
 import { BooksModule } from './books/books.module';
 import { User } from './users/user.entity';
 import { Book } from './books/book.entity';
+import { AppController } from './app.controller';
 
 @Module({
+  controllers: [AppController],
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({

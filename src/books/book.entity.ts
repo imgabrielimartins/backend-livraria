@@ -47,6 +47,9 @@ export class Book {
   @Column({ default: false })
   isPublished: boolean;
 
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  price: number;
+
   @Column({ type: 'text', nullable: true })
   adminNote: string;
 

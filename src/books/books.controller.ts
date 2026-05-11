@@ -23,6 +23,11 @@ interface AuthRequest {
 export class BooksController {
   constructor(private booksService: BooksService) {}
 
+  @Get()
+  findAll(@Query('genre') genre?: BookGenre, @Query('author_id') authorId?: string) {
+    return this.booksService.findPublished(genre, authorId ? Number(authorId) : undefined);
+  }
+
   @Get('published')
   findPublished(
     @Query('genre') genre?: BookGenre,
@@ -64,10 +69,19 @@ export class BooksController {
     return this.booksService.submit({ ...body, authorId: req.user.sub });
   }
 
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.booksService.findOne(Number(id));
+  }
+
   @Patch(':id/publish')
   @UseGuards(JwtAuthGuard)
-  publish(@Param('id') id: number, @Request() req: AuthRequest) {
-    return this.booksService.publishBook(id, req.user.sub);
+  publish(
+    @Param('id') id: number,
+    @Body() body: { price?: number },
+    @Request() req: AuthRequest,
+  ) {
+    return this.booksService.publishBook(id, req.user.sub, body.price);
   }
 
   @Patch(':id/analysis')
